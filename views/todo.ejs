@@ -1,0 +1,12 @@
+<%- include('header'); -%>
+
+<h2>TODO List</h2>
+
+<ol>
+<% todos.forEach(function(todo) { %>
+  <li><%= todo.task %>
+<% }); %>
+</ol>
+
+<p><a href="/todo">Add TODO</a></p>
+<%- include('footer'); -%>

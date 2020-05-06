@@ -1,0 +1,102 @@
+const express = require('express');
+const app = express();
+app.use(express.urlencoded());
+const MongoClient = require('mongodb').MongoClient;
+// Use UUIDv4 for IDs
+const uuidv4 = require('uuid/v4');
+const dbname = 'employeedb';
+
+// Create users.
+MongoClient.connect("mongodb://localhost:27017/employeedb", (err, client) => {
+    const adminDb = client.db(dbname).admin();
+    ["Edmund", "Lorenzo", "Ebenezer", "Josh"].forEach((emp, index) => {
+	// Why is it createUser in MongoDb but addUser in Node??? :(
+	adminDb.addUser(emp, 'tops3kr3t', {
+	    roles: [
+		{ role: 'readWrite', db: dbname }
+	    ]
+	}, (err, result) => {
+	    // we assume this means that the user has already been created
+	    // warn and move on...
+	    if (err) {
+		console.log("User already exists");
+	    }
+	});
+    });
+});
+
+// top menu
+function menu() {
+    return `
+<a href="/">Home</a> |
+<a href="/employeeList">Employees |
+<a href="/todoList">Todo List</a>
+<br>
+`
+}
+
+// start page
+app.get('/', (req, res) => {
+    page = menu() + "<p>Welcome to EasySoft Company Ltd!</p>";
+    res.send(page);
+});
+
+// employees
+app.get('/employeeList', (req, res) => {
+    page = menu() + "<h1>Employees</h1>";
+    MongoClient.connect("mongodb://localhost:27017/employeedb", (err, client) => {
+	const adminDb = client.db(dbname).admin();
+	adminDb.command({"usersInfo":1}, (err, users) => {
+	    page += "<p>" + users + "</p>";
+	});
+	["Edmund", "Lorenzo", "Ebenezer", "Josh"].forEach((emp, index) => {
+	    page += "<p>" + emp + "</p";
+	});
+	res.send(page);
+    });
+});
+
+// todo list
+app.get('/todoList', (req, res) => {
+    var page = menu() + "<h1>TODO List</h1>";
+
+    MongoClient.connect("mongodb://localhost:27017/employeedb", (err, client) => {
+	client.db('employeedb').collection('todo').find().toArray()
+	    .then(results => {
+		// build the list to todos
+		for (result of results) {
+		    page += "<p>" + result.task + "</p>";
+		}
+		page += '<a href="/todo">Add todo</a>';
+		res.send(page);
+	    });
+    });
+});
+
+// show todo form
+app.get('/todo', (req, res) => {
+    page = menu() + `
+<h1>Add TODO</h1>
+<form method="post" action="/todo">
+Task:
+<input type="text" name="task"><br>
+<input type="submit" value="Submit">
+` 
+    res.send(page)
+});
+
+// handle todo form
+app.post('/todo', (req, res) => {
+    MongoClient.connect("mongodb://localhost:27017/employeedb", (err, client) => {
+	// I'll just use insertOne to add to mongodb.
+	client.db('employeedb').collection('todo').insertOne(
+	    {id: uuidv4(), task: req.body.task});
+    });
+    page = menu() + "<h1>Thank you!</h1>";
+    res.send(page);
+});
+
+// start the server
+app.listen(3000, () => {
+    console.log("Employee list application running on localhost");
+})

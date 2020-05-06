@@ -1,0 +1,17 @@
+{
+  "name": "employeelist",
+  "version": "1.0.0",
+  "description": "list employees and todos",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Edmund Fiadzo",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.2",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.6",
+    "uuid": "^7.0.3"
+  }
+}

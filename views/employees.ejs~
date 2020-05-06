@@ -1,0 +1,8 @@
+<%- include('header'); -%>
+
+<ol>
+<% employees.forEach(function(employee) { %>
+   <li><%= employee %></li>
+<% }); %>
+</ol>
+<%- include('footer'); -%>
